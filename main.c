@@ -5,6 +5,8 @@
 #include "rs232.h"
 #include "serial.h"
 
+#include "Functions.h"
+
 #define bdrate 115200               /* 115200 baud */
 
 void SendCommands (char *buffer );
@@ -35,7 +37,12 @@ int main()
     WaitForDollar();
 
     printf ("\nThe robot is now ready to draw\n");
+    /*while(!feof(file))
+    {
+    sscanf(buffer, %d %d %d, x, y, p)
+    }*/
 
+/*
         //These commands get the robot into 'ready to draw mode' and need to be sent before any writing commands
     sprintf (buffer, "G1 X0 Y0 F1000\n");
     SendCommands(buffer);
@@ -43,7 +50,6 @@ int main()
     SendCommands(buffer);
     sprintf (buffer, "S0\n");
     SendCommands(buffer);
-
 
     // These are sample commands to draw out some information - these are the ones you will be generating.
     sprintf (buffer, "G0 X-13.41849 Y0.000\n");
@@ -64,6 +70,7 @@ int main()
     SendCommands(buffer);
     sprintf (buffer, "G0 X0 Y0\n");
     SendCommands(buffer);
+*/
 
     // Before we exit the program we need to close the COM port
     CloseRS232Port();
