@@ -18,5 +18,6 @@ typedef struct {
 } Character; // struct of all coordinates for a single character
 
 int ReadAndStoreFontData(char *FileName, Character **characters, size_t *Num_of_characters);
+int GetFontSizeAndScale( int *FontSize, float *Scale );
 int freeCharacters(Character *characters, size_t *Num_of_characters);
 #endif // functions_h

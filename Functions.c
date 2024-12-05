@@ -74,9 +74,28 @@ int ReadAndStoreFontData(char *FileName, Character **characters, size_t *Num_of_
     return 0;
 }
 
+int GetFontSizeAndScale( int *FontSize, float *Scale )
+{
+    int count = 0;
+    do
+    {
+        if(count >= 10)
+        {
+            printf("User didnt provie correct size of font 10 times\n");
+            return 1;
+        }
+        printf("\nPlease provide the font size of the printed text:\n");
+        scanf("%d", FontSize);
+        count++;
+    }while((*FontSize>10) || (*FontSize<4));
+    
+    *Scale = (float)*FontSize/18;
+    return 0;
+}
+
 int freeCharacters(Character *characters, size_t *Num_of_characters)
 {
-    for (int k = 0; k < Num_of_characters; k++)
+    for (int k = 0; k < (int)*Num_of_characters; k++)
     {
         free(characters[k].line);
     }

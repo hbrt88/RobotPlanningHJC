@@ -19,7 +19,7 @@ int main()
     Character *characters;
 
     int F_test = ReadAndStoreFontData(FileName, &characters, &Num_of_characters);
-    if(F_test == 1 || F_test == 2)
+    if(F_test != 0)
     {
         perror("Error in ReadAndStoreFontData()");
         return 1;
@@ -37,6 +37,17 @@ int main()
     printf("\nNumber of characters: %zu\n", Num_of_characters);
     // read end
 
+    // Get font size form the user
+    int FontSize;
+    float Scale;
+    F_test = GetFontSizeAndScale(&FontSize, &Scale);
+    if(F_test != 0)
+    {
+        perror("Error in GetFontSizeAndScale()");
+        return 1;
+    }
+
+    printf("Font size and scale %d\t%f\n", FontSize, Scale);
     //char mode[]= {'8','N','1',0};
     char buffer[100];
 
@@ -99,12 +110,21 @@ int main()
     CloseRS232Port();
     printf("Com port now closed\n");
 
+    //free alocated memory
+
+    F_test = freeCharacters(characters, &Num_of_characters);
+    if(F_test != 0)
+    {
+        perror("Error in freeCharacters()");
+        return 1;
+    }
+
     return (0);
 }
 
 // Send the data to the robot - note in 'PC' mode you need to hit space twice
 // as the dummy 'WaitForReply' has a getch() within the function.
-void SendCommands (char *buffer )
+void SendCommands (char *buffer)
 {
     // printf ("Buffer to send: %s", buffer); // For diagnostic purposes only, normally comment out
     PrintBuffer (&buffer[0]);
