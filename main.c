@@ -13,6 +13,29 @@ void SendCommands (char *buffer );
 
 int main()
 {
+    // read start
+    char *FileName = "SingleStrokeFont.txt";//"TestData.txt";
+    size_t Num_of_characters;
+    Character *characters;
+
+    int F_test = ReadAndStoreFontData(FileName, &characters, &Num_of_characters);
+    if(F_test == 1 || F_test == 2)
+    {
+        perror("Error in ReadAndStoreFontData()");
+        return 1;
+    }
+
+    // Print the characters
+    for (int n = 0; n < (int)Num_of_characters; n++)
+    {
+        printf("\nCharacter: %c\tn_lines: %d\n", characters[n].ASCII_Code, characters[n].n_lines);
+        for (int l = 0; l < characters[n].n_lines; l++)
+        {
+            printf("%d %d %d\n", (int)characters[n].line[l].fontX, (int)characters[n].line[l].fontY, (int)characters[n].line[l].P);
+        }
+    }
+    printf("\nNumber of characters: %zu\n", Num_of_characters);
+    // read end
 
     //char mode[]= {'8','N','1',0};
     char buffer[100];

@@ -1,7 +1,9 @@
+#ifndef functions_h
+#define functions_h
+
 #include <stdio.h>
 #include <stdlib.h>
-#ifndef Functions_H_INCLUDED
-#define Functions_H_INCLUDED
+#include <string.h>
 
 typedef struct {
     float fontX;
@@ -10,10 +12,11 @@ typedef struct {
 } Coordinates; //struct of coordinates in a single line for a single character
 
 typedef struct {
-    char *name; //array of structures (eg. name[1] = )
-    struct Coordinates *line; //length = number of lines of coordinates for each character
+    int ASCII_Code; // ASCII code of the character
+    int n_lines;
+    Coordinates *line; //length = number of n_lines of coordinates for each character
 } Character; // struct of all coordinates for a single character
 
-int ReadAndStoreFontData( char *FileName, struct FontData *Character );
-
-#endif //Functions_H_INCLUDED
+int ReadAndStoreFontData(char *FileName, Character **characters, size_t *Num_of_characters);
+int freeCharacters(Character *characters, size_t *Num_of_characters);
+#endif // functions_h
