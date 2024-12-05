@@ -48,6 +48,26 @@ int main()
     }
 
     printf("Font size and scale %d\t%f\n", FontSize, Scale);
+
+    // get text file name from the user with the text to be printed out
+    char TextFileName[100];
+    int count = 0;
+    FILE *TextFile;
+    do
+    {
+        printf("\nPlease provide the name of the file with the text to be printed (include the .txt):\n");
+        scanf("%s", TextFileName);
+        // open the file 
+        TextFile = fopen(TextFileName,"r");
+        count++;
+    }while(TextFile == NULL && count<10);
+
+    if (TextFile == NULL)
+    {
+        perror("Error opening the text file");
+        return 1;
+    }
+    
     //char mode[]= {'8','N','1',0};
     char buffer[100];
 
@@ -110,8 +130,9 @@ int main()
     CloseRS232Port();
     printf("Com port now closed\n");
 
-    //free alocated memory
-
+    // Close text file
+    fclose(TextFile);
+    // Free alocated memory
     F_test = freeCharacters(characters, &Num_of_characters);
     if(F_test != 0)
     {
