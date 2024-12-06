@@ -4,6 +4,40 @@
 
 #include "functions.h"
 
+
+int GenerateGCode(int m, int letter, CharacterGCode **charactersGCode, Character **characters, float Scale, float OffsetX, float OffsetY, float *CharacterX)
+{
+    (*charactersGCode)[letter].n_lines = (*characters)[m].n_lines;
+    float ScaledX, ScaledY;
+    (*charactersGCode)[letter].line = calloc( (size_t)(*characters)[m].n_lines, sizeof( GCodeCoordinates ) );
+    if ((*charactersGCode)[letter].line == NULL)
+    {
+        perror("Failed memory allocation");
+        return 1;
+    }
+
+    for( int i = 0; i < (*characters)[m].n_lines; i++)
+    {
+        ScaledX = ((*characters)[m].line[i].fontX) * Scale + OffsetX;
+        ScaledY = ((*characters)[m].line[i].fontY) * Scale + OffsetY;
+        
+        if(i == 0)
+        {
+
+            sprintf((*charactersGCode)[letter].line[i].X, "X%f", 0.0);
+            sprintf((*charactersGCode)[letter].line[i].Y, "Y%f", 0.0);
+            sprintf((*charactersGCode)[letter].line[i].G, "G%d", 1);
+            sprintf((*charactersGCode)[letter].line[i].S, "S%d", 0);
+        }
+        sprintf((*charactersGCode)[letter].line[i].X, "X%f", ScaledX);
+        sprintf((*charactersGCode)[letter].line[i].Y, "Y%f", ScaledY);
+        sprintf((*charactersGCode)[letter].line[i].G, "G%d", ((*characters)[m].line[i].P));
+        sprintf((*charactersGCode)[letter].line[i].S, "S%d", ((*characters)[m].line[i].P * 1000));
+
+    }
+    return 0;
+}
+
 int ReadAndStoreFontData(char *FileName, Character **characters, size_t *Num_of_characters)
 {
     FILE *file;
@@ -93,12 +127,18 @@ int GetFontSizeAndScale( int *FontSize, float *Scale )
     return 0;
 }
 
-int freeCharacters(Character *characters, size_t *Num_of_characters)
+int freeCharacters(Character *characters, CharacterGCode *charactersGCode, size_t *Num_of_characters)
 {
     for (int k = 0; k < (int)*Num_of_characters; k++)
     {
         free(characters[k].line);
     }
+
+    for (int l = 0; l < (int)sizeof(charactersGCode); l++)
+    {
+        free(characters[l].line);
+    }
     free(characters);
+    free(charactersGCode);
     return 0;
 }

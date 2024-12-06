@@ -43,7 +43,7 @@ int main()
     F_test = GetFontSizeAndScale(&FontSize, &Scale);
     if(F_test != 0)
     {
-        perror("Error in GetFontSizeAndScale()");
+        printf("Error in GetFontSizeAndScale()");
         return 1;
     }
 
@@ -67,6 +67,18 @@ int main()
         perror("Error opening the text file");
         return 1;
     }
+
+    // scan the file for the number of characters
+    int ch;
+    size_t letterCount = 0;
+    while ((ch = fgetc(TextFile)) != EOF)
+    {
+        letterCount++;
+        //printf("\n%d\t%c",ch, ch);
+    }
+    fclose(TextFile);
+    CharacterGCode *charactersGCode;
+    charactersGCode = calloc( letterCount, sizeof( CharacterGCode ) ); // allocate memory to array of structures for each character in the text file to be filed out later with gcode
     
     //char mode[]= {'8','N','1',0};
     char buffer[100];
@@ -91,13 +103,8 @@ int main()
     WaitForDollar();
 
     printf ("\nThe robot is now ready to draw\n");
-    /*while(!feof(file))
-    {
-    sscanf(buffer, %d %d %d, x, y, p)
-    }*/
 
-/*
-        //These commands get the robot into 'ready to draw mode' and need to be sent before any writing commands
+    //These commands get the robot into 'ready to draw mode' and need to be sent before any writing commands
     sprintf (buffer, "G1 X0 Y0 F1000\n");
     SendCommands(buffer);
     sprintf (buffer, "M3\n");
@@ -105,6 +112,64 @@ int main()
     sprintf (buffer, "S0\n");
     SendCommands(buffer);
 
+    float OffsetX = 0.0, OffsetY = 0.0, CharacterX = 0.0, DrawingX = 0.0;
+    int letter = 0, WordsInLine = 0, s = 0;
+    // compare ch to characters.
+    // open generategcode with that characters. as inpput
+    // put that g code into buffer and send
+    // Read the test text file leter by letter and and convert coordinates for that letter into g code
+    TextFile = fopen(TextFileName,"r");
+    while((ch = fgetc(TextFile)) != EOF ) //!feof(TextFile))
+    {
+        //ch = fgetc(TextFile);
+        //printf("letter: %d/t ch: %s", letter, ch);
+        for ( int m = 0; m < (int)Num_of_characters; m++ )
+        {
+            if( characters[m].ASCII_Code == ch )
+            {
+                F_test = GenerateGCode(m, letter, &charactersGCode, &characters, Scale, OffsetX, OffsetY, &CharacterX);
+                if(F_test != 0)
+                {
+                    printf("Error in GetFontSizeAndScale()");
+                    return 1;
+                }
+            }
+        }
+        if(ch == 32)// end of word
+        {
+            WordsInLine++;
+
+            if( (DrawingX > 100) || (ch = 10) || (ch = 13))
+            {
+                OffsetY = OffsetY + 5.0 + (float)FontSize;
+                DrawingX = 0;
+                WordsInLine = 1;
+            }
+            OffsetX = DrawingX;
+                    //send gcode to the robot
+        while(s < letter)
+        {
+            for (int o = 0; o < charactersGCode[s].n_lines; o++)
+            {
+                //memset(buffer, '\0', sizeof(buffer));
+                //strcat(buffer, charactersGCode[s].line[o].S);
+                //strcat(buffer, charactersGCode[s].line[o].G);
+                //strcat(buffer, charactersGCode[s].line[o].X);
+                //strcat(buffer, charactersGCode[s].line[o].Y);
+                //sscanf(buffer, "%s\n %s %s %s\n", charactersGCode[s].line[o].S, charactersGCode[s].line[o].G, charactersGCode[s].line[o].X, charactersGCode[s].line[o].Y);
+                sprintf (buffer, "%s\n %s %s %s\n", charactersGCode[s].line[o].S, charactersGCode[s].line[o].G, charactersGCode[s].line[o].X, charactersGCode[s].line[o].Y);
+                SendCommands(buffer);
+            }
+            s++;
+        }
+        }else if( DrawingX >= 100 && WordsInLine <= 1)
+        {
+            printf(" Word length is larger than drawing length\n ");
+            return 1;
+        }
+        letter++;
+    }
+/*
     // These are sample commands to draw out some information - these are the ones you will be generating.
     sprintf (buffer, "G0 X-13.41849 Y0.000\n");
     SendCommands(buffer);
@@ -133,7 +198,7 @@ int main()
     // Close text file
     fclose(TextFile);
     // Free alocated memory
-    F_test = freeCharacters(characters, &Num_of_characters);
+    F_test = freeCharacters(characters, charactersGCode, &Num_of_characters);
     if(F_test != 0)
     {
         perror("Error in freeCharacters()");
@@ -147,7 +212,7 @@ int main()
 // as the dummy 'WaitForReply' has a getch() within the function.
 void SendCommands (char *buffer)
 {
-    // printf ("Buffer to send: %s", buffer); // For diagnostic purposes only, normally comment out
+    printf ("Buffer to send: %s", buffer); // For diagnostic purposes only, normally comment out
     PrintBuffer (&buffer[0]);
     WaitForReply();
     Sleep(100); // Can omit this when using the writing robot but has minimal effect
