@@ -23,7 +23,6 @@ int GenerateGCode(int m, int letter, CharacterGCode **charactersGCode, Character
         
         if(i == 0)
         {
-
             sprintf((*charactersGCode)[letter].line[i].X, "X%f", 0.0);
             sprintf((*charactersGCode)[letter].line[i].Y, "Y%f", 0.0);
             sprintf((*charactersGCode)[letter].line[i].G, "G%d", 1);

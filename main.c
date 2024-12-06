@@ -157,7 +157,7 @@ int main()
                 //strcat(buffer, charactersGCode[s].line[o].X);
                 //strcat(buffer, charactersGCode[s].line[o].Y);
                 //sscanf(buffer, "%s\n %s %s %s\n", charactersGCode[s].line[o].S, charactersGCode[s].line[o].G, charactersGCode[s].line[o].X, charactersGCode[s].line[o].Y);
-                sprintf (buffer, "%s\n %s %s %s\n", charactersGCode[s].line[o].S, charactersGCode[s].line[o].G, charactersGCode[s].line[o].X, charactersGCode[s].line[o].Y);
+                sprintf (buffer, "%s\n%s %s %s", charactersGCode[s].line[o].S, charactersGCode[s].line[o].G, charactersGCode[s].line[o].X, charactersGCode[s].line[o].Y);
                 SendCommands(buffer);
             }
             s++;
@@ -212,7 +212,7 @@ int main()
 // as the dummy 'WaitForReply' has a getch() within the function.
 void SendCommands (char *buffer)
 {
-    printf ("Buffer to send: %s", buffer); // For diagnostic purposes only, normally comment out
+    //printf ("Buffer to send: %s", buffer); // For diagnostic purposes only, normally comment out
     PrintBuffer (&buffer[0]);
     WaitForReply();
     Sleep(100); // Can omit this when using the writing robot but has minimal effect
