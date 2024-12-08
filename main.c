@@ -25,17 +25,16 @@ int main()
         return 1;
     }
 
+    /*
     // Print the characters
     for (int n = 0; n < (int)Num_of_characters; n++)
     {
-        printf("\nCharacter: %c\tn_lines: %d\n", characters[n].ASCII_Code, characters[n].n_lines);
+        printf("\nCharacter: %d\tn_lines: %d\n", characters[n].ASCII_Code, characters[n].n_lines);
         for (int l = 0; l < characters[n].n_lines; l++)
         {
             printf("%d %d %d\n", (int)characters[n].line[l].fontX, (int)characters[n].line[l].fontY, (int)characters[n].line[l].P);
         }
-    }
-    printf("\nNumber of characters: %zu\n", Num_of_characters);
-    // read end
+    }*/
 
     // Get font size form the user
     int FontSize;
@@ -74,8 +73,9 @@ int main()
     while ((ch = fgetc(TextFile)) != EOF)
     {
         letterCount++;
-        //printf("\n%d\t%c",ch, ch);
+        printf("\n%d\t%c",ch, ch);
     }
+    printf("\n%d", letterCount);
     fclose(TextFile);
     CharacterGCode *charactersGCode;
     charactersGCode = calloc( letterCount, sizeof( CharacterGCode ) ); // allocate memory to array of structures for each character in the text file to be filed out later with gcode
@@ -112,17 +112,197 @@ int main()
     sprintf (buffer, "S0\n");
     SendCommands(buffer);
 
-    float OffsetX = 0.0, OffsetY = 0.0, CharacterX = 0.0, DrawingX = 0.0;
-    int letter = 0, WordsInLine = 0, s = 0;
-    // compare ch to characters.
-    // open generategcode with that characters. as inpput
-    // put that g code into buffer and send
-    // Read the test text file leter by letter and and convert coordinates for that letter into g code
+    float OffsetX = 0.0, OffsetY = 0.0, CharacterX = 0.0;
+    int letter = 0, Bletter = 0, s = 0, send = 0;
+    char WordBuffer[1024] = "";
     TextFile = fopen(TextFileName,"r");
-    while((ch = fgetc(TextFile)) != EOF ) //!feof(TextFile))
+
+    while(!feof(TextFile))
     {
-        //ch = fgetc(TextFile);
-        //printf("letter: %d/t ch: %s", letter, ch);
+        ch = fgetc(TextFile);
+/*
+        strncat(WordBuffer, &ch, 1);
+
+        for (int w = 0; w < Bletter; w++)
+        {
+            ch = WordBuffer[w];
+            if (ch == 32) // space
+            {
+                for ( int m = 0; m < (int)Num_of_characters; m++ ) // generate GCode
+                {
+                    if( characters[m].ASCII_Code == ch )
+                    {
+                        F_test = GenerateGCode(m, letter, &charactersGCode, &characters, Scale, OffsetX, OffsetY, &CharacterX);
+                        if(F_test != 0)
+                            {
+                            printf("Error in GetFontSizeAndScale()");
+                            return 1;
+                        }
+                    }
+                }
+                send = 1;
+                OffsetX = CharacterX;
+                letter++;
+            }else if (ch == 10) //new line
+            {
+                for ( int m = 0; m < (int)Num_of_characters; m++ ) // generate GCode
+                {
+                    if( characters[m].ASCII_Code == ch )
+                    {
+                        F_test = GenerateGCode(m, letter, &charactersGCode, &characters, Scale, OffsetX, OffsetY, &CharacterX);
+                        if(F_test != 0)
+                        {
+                            printf("Error in GetFontSizeAndScale()");
+                            return 1;
+                        }
+                    }
+                }
+                letter++;
+                send = 1;
+                OffsetX = 0;
+                CharacterX = 0;
+                OffsetY = OffsetY - (Scale*(5.0 + (float)FontSize));
+            }else // letters inside a word
+            {
+                for ( int m = 0; m < (int)Num_of_characters; m++ ) // generate GCode
+                {
+                    if( characters[m].ASCII_Code == ch )
+                    {
+                        F_test = GenerateGCode(m, letter, &charactersGCode, &characters, Scale, OffsetX, OffsetY, &CharacterX);
+                        if(F_test != 0)
+                        {
+                            printf("Error in GetFontSizeAndScale()");
+                            return 1;
+                        }
+                    }
+                }
+                OffsetX = CharacterX;
+                letter++;
+            }
+        }
+        Bletter++;
+        if ( OffsetX > 100 )
+        {
+            send = 1;
+            OffsetX = 0;
+            CharacterX = 0;
+            OffsetY = OffsetY - (Scale*(5.0 + (float)FontSize));
+        }
+
+        if (send == 1)
+        {
+            send = 0;
+            for (int p = 0; p < Bletter; p++)
+            {
+                int c = WordBuffer[p];
+                for ( int m = 0; m < (int)Num_of_characters; m++ ) // generate GCode
+                {
+                    if( characters[m].ASCII_Code == c )
+                    {
+                        F_test = GenerateGCode(m, letter, &charactersGCode, &characters, Scale, OffsetX, OffsetY, &CharacterX);
+                        if(F_test != 0)
+                        {
+                            printf("Error in GetFontSizeAndScale()");
+                            return 1;
+                        }
+                    }
+                }
+            }
+            Bletter = 0;
+        }
+    }*/
+
+        if (ch == 32) // space
+        {
+            for ( int m = 0; m < (int)Num_of_characters; m++ ) // generate GCode
+            {
+                if( characters[m].ASCII_Code == ch )
+                {
+                    F_test = GenerateGCode(m, letter, &charactersGCode, &characters, Scale, OffsetX, OffsetY, &CharacterX);
+                    if(F_test != 0)
+                    {
+                        printf("Error in GetFontSizeAndScale()");
+                        return 1;
+                    }
+                }
+            }
+            OffsetX = CharacterX;
+            letter++;
+            while( s < letter ) //send code to the robot
+            {
+                for (int o = 0; o < charactersGCode[s].n_lines; o++)
+                {
+                    sprintf (buffer, "%s %s %s %s\n", charactersGCode[s].line[o].S, charactersGCode[s].line[o].G, charactersGCode[s].line[o].X, charactersGCode[s].line[o].Y);
+                    SendCommands(buffer);
+                }  
+                s++;
+            }
+        }else if (ch == 10) //new line
+        {
+            for ( int m = 0; m < (int)Num_of_characters; m++ ) // generate GCode
+            {
+                if( characters[m].ASCII_Code == ch )
+                {
+                    F_test = GenerateGCode(m, letter, &charactersGCode, &characters, Scale, OffsetX, OffsetY, &CharacterX);
+                    if(F_test != 0)
+                    {
+                        printf("Error in GetFontSizeAndScale()");
+                        return 1;
+                    }
+                }
+            }
+            letter++;
+            while( s < letter ) //send code to the robot
+            {
+                for (int o = 0; o < charactersGCode[s].n_lines; o++)
+                {
+                    sprintf (buffer, "%s %s %s %s\n", charactersGCode[s].line[o].S, charactersGCode[s].line[o].G, charactersGCode[s].line[o].X, charactersGCode[s].line[o].Y);
+                    SendCommands(buffer);
+                }  
+                s++;
+            }
+            OffsetX = 0;
+            CharacterX = 0;
+            OffsetY = OffsetY - (Scale*(5.0 + (float)FontSize));
+        }else // letters inside a word
+        {
+            for ( int m = 0; m < (int)Num_of_characters; m++ ) // generate GCode
+            {
+                if( characters[m].ASCII_Code == ch )
+                {
+                    F_test = GenerateGCode(m, letter, &charactersGCode, &characters, Scale, OffsetX, OffsetY, &CharacterX);
+                    if(F_test != 0)
+                    {
+                        printf("Error in GetFontSizeAndScale()");
+                        return 1;
+                    }
+                }
+            }
+            OffsetX = CharacterX;
+            letter++;
+        }
+
+        /*
+        if (OffsetX > 100) //if letter exceeds writing area
+        {
+            while( s < letter ) //send code to the robot
+            {
+                for (int o = 0; o < charactersGCode[s].n_lines; o++)
+                {
+                    sprintf (buffer, "%s %s %s %s\n", charactersGCode[s].line[o].S, charactersGCode[s].line[o].G, charactersGCode[s].line[o].X, charactersGCode[s].line[o].Y);
+                    SendCommands(buffer);
+                }  
+                s++;
+            }
+            strcpy(WordBuffer,""); //empty WordBuffer
+            OffsetX = 0;
+            OffsetY = OffsetY - (Scale*(5.0 + (float)FontSize));
+        }*/
+    }
+
+    /*
+    while((ch = fgetc(TextFile)) != EOF )
+    {
         for ( int m = 0; m < (int)Num_of_characters; m++ )
         {
             if( characters[m].ASCII_Code == ch )
@@ -135,19 +315,29 @@ int main()
                 }
             }
         }
-        if(ch == 32)// end of word
+        OffsetX = OffsetX + CharacterX;
+        if ((OffsetX > 100)) //|| (ch = 13) || (ch == 10)) //new line
         {
-            WordsInLine++;
-
-            if( (DrawingX > 100) || (ch = 10) || (ch = 13))
+            OffsetY = OffsetY - 5.0 - (float)FontSize;
+            CharacterX = 0;
+            OffsetX = 0;
+            WordsInLine = 1;
+        }
+        // || (ch = 10) || (ch = 13))
+        if ( ch = 32 ) // space -> new word
+        {
+            CharacterX = 0;
+            while(s < letter) //send code to the robot
             {
-                OffsetY = OffsetY + 5.0 + (float)FontSize;
-                DrawingX = 0;
-                WordsInLine = 1;
+                for (int o = 0; o < charactersGCode[s].n_lines; o++)
+                {
+                    sprintf (buffer, "%s %s %s %s\n", charactersGCode[s].line[o].S, charactersGCode[s].line[o].G, charactersGCode[s].line[o].X, charactersGCode[s].line[o].Y);
+                    SendCommands(buffer);
+                }  
+                s++;
             }
-            OffsetX = DrawingX;
-                    //send gcode to the robot
-        while(s < letter)
+        }
+        while(s < letter) //send code to the robot
         {
             for (int o = 0; o < charactersGCode[s].n_lines; o++)
             {
@@ -157,18 +347,14 @@ int main()
                 //strcat(buffer, charactersGCode[s].line[o].X);
                 //strcat(buffer, charactersGCode[s].line[o].Y);
                 //sscanf(buffer, "%s\n %s %s %s\n", charactersGCode[s].line[o].S, charactersGCode[s].line[o].G, charactersGCode[s].line[o].X, charactersGCode[s].line[o].Y);
-                sprintf (buffer, "%s\n%s %s %s", charactersGCode[s].line[o].S, charactersGCode[s].line[o].G, charactersGCode[s].line[o].X, charactersGCode[s].line[o].Y);
+                sprintf (buffer, "%s %s %s %s\n", charactersGCode[s].line[o].S, charactersGCode[s].line[o].G, charactersGCode[s].line[o].X, charactersGCode[s].line[o].Y);
                 SendCommands(buffer);
             }
             s++;
         }
-        }else if( DrawingX >= 100 && WordsInLine <= 1)
-        {
-            printf(" Word length is larger than drawing length\n ");
-            return 1;
-        }
         letter++;
     }
+    */
 /*
     // These are sample commands to draw out some information - these are the ones you will be generating.
     sprintf (buffer, "G0 X-13.41849 Y0.000\n");

@@ -32,7 +32,10 @@ int GenerateGCode(int m, int letter, CharacterGCode **charactersGCode, Character
         sprintf((*charactersGCode)[letter].line[i].Y, "Y%f", ScaledY);
         sprintf((*charactersGCode)[letter].line[i].G, "G%d", ((*characters)[m].line[i].P));
         sprintf((*charactersGCode)[letter].line[i].S, "S%d", ((*characters)[m].line[i].P * 1000));
-
+        if( ScaledX > *CharacterX )
+        {
+            *CharacterX = ScaledX;
+        }
     }
     return 0;
 }
