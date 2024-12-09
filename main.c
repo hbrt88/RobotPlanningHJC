@@ -113,11 +113,11 @@ int main()
     SendCommands(buffer);
 
     float OffsetX = 0.0, OffsetY = 0.0, CharacterX = 0.0;
-    int letter = 0, Bletter = 0, s = 0, send = 0;
-    char WordBuffer[1024] = "";
+    int letter = 0, s = 0;// Bletter = 0, send = 0;
+    //char WordBuffer[1024] = "";
     TextFile = fopen(TextFileName,"r");
 
-    while(!feof(TextFile))
+    while(1)
     {
         ch = fgetc(TextFile);
 /*
@@ -282,6 +282,19 @@ int main()
             letter++;
         }
 
+        if( feof(TextFile) )
+        {
+            while( s < letter ) //send code to the robot
+            {
+                for (int o = 0; o < charactersGCode[s].n_lines; o++)
+                {
+                    sprintf (buffer, "%s %s %s %s\n", charactersGCode[s].line[o].S, charactersGCode[s].line[o].G, charactersGCode[s].line[o].X, charactersGCode[s].line[o].Y);
+                    SendCommands(buffer);
+                }  
+                s++;
+            }
+            break;
+        }
         /*
         if (OffsetX > 100) //if letter exceeds writing area
         {
