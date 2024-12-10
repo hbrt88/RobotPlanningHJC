@@ -27,11 +27,14 @@ int GenerateGCode(int m, int letter, CharacterGCode **charactersGCode, Character
             sprintf((*charactersGCode)[letter].line[i].Y, "Y%f", 0.0);
             sprintf((*charactersGCode)[letter].line[i].G, "G%d", 1);
             sprintf((*charactersGCode)[letter].line[i].S, "S%d", 0);
+        }else
+        {
+            sprintf((*charactersGCode)[letter].line[i].X, "X%f", ScaledX);
+            sprintf((*charactersGCode)[letter].line[i].Y, "Y%f", ScaledY);
+            sprintf((*charactersGCode)[letter].line[i].G, "G%d", ((*characters)[m].line[i].P));
+            sprintf((*charactersGCode)[letter].line[i].S, "S%d", ((*characters)[m].line[i].P * 1000));
         }
-        sprintf((*charactersGCode)[letter].line[i].X, "X%f", ScaledX);
-        sprintf((*charactersGCode)[letter].line[i].Y, "Y%f", ScaledY);
-        sprintf((*charactersGCode)[letter].line[i].G, "G%d", ((*characters)[m].line[i].P));
-        sprintf((*charactersGCode)[letter].line[i].S, "S%d", ((*characters)[m].line[i].P * 1000));
+
         if( ScaledX > *CharacterX )
         {
             *CharacterX = ScaledX;
@@ -66,7 +69,7 @@ int ReadAndStoreFontData(char *FileName, Character **characters, size_t *Num_of_
     fclose(file);
 
     // Allocate memory to the array of characters
-    *characters = calloc( *Num_of_characters, sizeof( Character ) );//(Character *) malloc( Num_of_characters * sizeof(*characters) );
+    *characters = calloc( *Num_of_characters, sizeof( Character ) );
     if (*characters == NULL)
     {
         perror("Failed to allocate memory");
