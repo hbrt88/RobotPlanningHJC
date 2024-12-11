@@ -4,30 +4,31 @@
 
 #include "functions.h"
 
-
+// generate GCode for a single character
 int GenerateGCode(int m, int letter, CharacterGCode **charactersGCode, Character **characters, float Scale, float OffsetX, float OffsetY, float *CharacterX)
 {
-    (*charactersGCode)[letter].n_lines = (*characters)[m].n_lines;
+    // init variables and structs
+    (*charactersGCode)[letter].n_lines = (*characters)[m].n_lines; 
     float ScaledX, ScaledY;
-    (*charactersGCode)[letter].line = calloc( (size_t)(*characters)[m].n_lines, sizeof( GCodeCoordinates ) );
-    if ((*charactersGCode)[letter].line == NULL)
+    (*charactersGCode)[letter].line = calloc( (size_t)(*characters)[m].n_lines, sizeof( GCodeCoordinates ) );// allocate memory to array of structures inside CharacterGCode structure
+    if ((*charactersGCode)[letter].line == NULL) // test if memory allocation worked
     {
         perror("Failed memory allocation");
         return 1;
     }
 
-    for( int i = 0; i < (*characters)[m].n_lines; i++)
+    for( int i = 0; i < (*characters)[m].n_lines; i++) // generate gcode line by line loop
     {
-        ScaledX = ((*characters)[m].line[i].fontX) * Scale + OffsetX;
+        ScaledX = ((*characters)[m].line[i].fontX) * Scale + OffsetX; // adding offset and scaling the coordinates
         ScaledY = ((*characters)[m].line[i].fontY) * Scale + OffsetY;
         
-        if(i == 0)
+        if(i == 0) // first line of gcode for a character
         {
             sprintf((*charactersGCode)[letter].line[i].X, "X%f", 0.0);
             sprintf((*charactersGCode)[letter].line[i].Y, "Y%f", 0.0);
             sprintf((*charactersGCode)[letter].line[i].G, "G%d", 1);
             sprintf((*charactersGCode)[letter].line[i].S, "S%d", 0);
-        }else
+        }else // following lines
         {
             sprintf((*charactersGCode)[letter].line[i].X, "X%f", ScaledX);
             sprintf((*charactersGCode)[letter].line[i].Y, "Y%f", ScaledY);
@@ -35,19 +36,19 @@ int GenerateGCode(int m, int letter, CharacterGCode **charactersGCode, Character
             sprintf((*charactersGCode)[letter].line[i].S, "S%d", ((*characters)[m].line[i].P * 1000));
         }
 
-        if( ScaledX > *CharacterX )
+        if( ScaledX > *CharacterX ) // finding the furthest x coordinates 
         {
             *CharacterX = ScaledX;
         }
     }
     return 0;
 }
-
+// read font data and store it in an array of structs
 int ReadAndStoreFontData(char *FileName, Character **characters, size_t *Num_of_characters)
 {
     FILE *file;
     file = fopen(FileName,"r");
-    if (file == NULL)
+    if (file == NULL) // check if the file opened correctly
     {
         perror("Error opening file");
         return 1;
@@ -77,7 +78,7 @@ int ReadAndStoreFontData(char *FileName, Character **characters, size_t *Num_of_
     }
 
     file = fopen(FileName,"r");
-    if (file == NULL)
+    if (file == NULL) // check if the file opened correctly
     {
         perror("Error opening file");
         free(*characters);
@@ -89,13 +90,13 @@ int ReadAndStoreFontData(char *FileName, Character **characters, size_t *Num_of_
     while(!feof(file))
     {
         fgets(buffer, 50, file);
-        sscanf(buffer, "%d %d %d", &buffer3[0], &buffer3[1], &buffer3[2]);
-        if( buffer3[0] == 999 )
+        sscanf(buffer, "%d %d %d", &buffer3[0], &buffer3[1], &buffer3[2]); // scan line by line
+        if( buffer3[0] == 999 ) // check if a new character is being defined
         {
-            (*characters)[j].ASCII_Code = buffer3[1];
-            (*characters)[j].n_lines = buffer3[2];
-            (*characters)[j].line = calloc( (size_t)buffer3[2], sizeof( Coordinates ) );
-            if (*characters == NULL)
+            (*characters)[j].ASCII_Code = buffer3[1]; // new characters ascii code
+            (*characters)[j].n_lines = buffer3[2]; // number of lines defining the characters drawing coordinates
+            (*characters)[j].line = calloc( (size_t)buffer3[2], sizeof( Coordinates ) ); // allocating memory to the array of structs containing the coordinates
+            if (*characters == NULL) // check if memory allocated correctly
             {
                 perror("Failed to allocate memory");
                 return 2;
@@ -103,7 +104,7 @@ int ReadAndStoreFontData(char *FileName, Character **characters, size_t *Num_of_
             buffer3[2] = 0;
             i = 0;
             j++;
-        }else
+        }else // lines of coordinates following the first line defining the character
         {
             sscanf(buffer, "%f %f %d", &(*characters)[j-1].line[i].fontX, &(*characters)[j-1].line[i].fontY, &(*characters)[j-1].line[i].P);
             i++;
@@ -112,13 +113,13 @@ int ReadAndStoreFontData(char *FileName, Character **characters, size_t *Num_of_
     fclose(file);
     return 0;
 }
-
+// obtain from the user the font size of the text to be printed
 int GetFontSizeAndScale( int *FontSize, float *Scale )
 {
     int count = 0;
     do
     {
-        if(count >= 10)
+        if(count >= 10) // ask the user to give the font size between 4 - 10 until a value withing range is given or until user has been asked 10 times
         {
             printf("User didnt provie correct size of font 10 times\n");
             return 1;
@@ -128,10 +129,10 @@ int GetFontSizeAndScale( int *FontSize, float *Scale )
         count++;
     }while((*FontSize>10) || (*FontSize<4));
     
-    *Scale = (float)*FontSize/18;
+    *Scale = (float)*FontSize/18; // calculate the scale to scale the coordinates by later
     return 0;
 }
-
+// free all allocated memory for arrays of structs
 int freeCharacters(Character *characters, CharacterGCode *charactersGCode, size_t *Num_of_characters)
 {
     for (int k = 0; k < (int)*Num_of_characters; k++)
